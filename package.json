@@ -3,10 +3,12 @@
   "version": "1.0.0",
   "description": "CSS compiler for the Mothership system",
   "scripts": {
-    "build": "gulp",
+    "build": "gulp css",
+    "build:watch": "gulp",
     "compile": "gulp css",
     "watch": "gulp",
-    "gulp": "gulp"
+    "gulp": "gulp",
+    "test:quench": "npm run build && npm run build --prefix quench && npm run tests:ci --prefix quench"
   },
   "browserslist": [
     "last 3 versions"
@@ -14,10 +16,12 @@
   "author": "Martin Jencka",
   "license": "MIT",
   "private": true,
-  "dependencies": {
-    "gulp": "^4.0.2",
-    "gulp-autoprefixer": "^7.0.1",
-    "gulp-sass": "^4.1.0",
-    "gulp-sourcemaps": "^2.6.5"
+  "devDependencies": {
+    "gulp": "^5.0.1",
+    "gulp-autoprefixer": "^8.0.0",
+    "gulp-rename": "^2.1.0",
+    "gulp-sass": "^6.0.1",
+    "gulp-sourcemaps": "^3.0.0",
+    "sass": "^1.93.2"
   }
 }

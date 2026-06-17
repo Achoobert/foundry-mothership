@@ -1,34 +1,37 @@
 const gulp = require('gulp');
 const prefix = require('gulp-autoprefixer');
 const sourcemaps = require('gulp-sourcemaps');
-const sass = require('gulp-sass');
+const dartSass = require('sass');
+const gulpSass = require('gulp-sass');
+const sass = gulpSass(dartSass);
 
 /* ----------------------------------------- */
 /*  Compile Sass
 /* ----------------------------------------- */
 
-// Small error handler helper function.
 function handleError(err) {
   console.log(err.toString());
   this.emit('end');
 }
 
-const SYSTEM_SCSS = ["scss/**/*.scss"];
+const SYSTEM_SCSS = ['scss/**/*.scss'];
+
 function compileScss() {
-  // Configure options for sass output. For example, 'expanded' or 'nested'
-  let options = {
+  const options = {
     outputStyle: 'expanded'
   };
   return gulp.src(SYSTEM_SCSS)
+    .pipe(sourcemaps.init())
     .pipe(
-      sass(options)
-        .on('error', handleError)
+      sass(options).on('error', handleError)
     )
     .pipe(prefix({
       cascade: false
     }))
-    .pipe(gulp.dest("./css"))
+    .pipe(sourcemaps.write('.'))
+    .pipe(gulp.dest('./css'));
 }
+
 const css = gulp.series(compileScss);
 
 /* ----------------------------------------- */
@@ -43,8 +46,6 @@ function watchUpdates() {
 /*  Export Tasks
 /* ----------------------------------------- */
 
-exports.default = gulp.series(
-  compileScss,
-  watchUpdates
-);
 exports.css = css;
+exports.build = css;
+exports.default = gulp.series(compileScss, watchUpdates);
