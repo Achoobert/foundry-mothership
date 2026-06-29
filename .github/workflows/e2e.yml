@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - e2e-tests
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  actions: write
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    env:
+      FOUNDRY_WAIT_MS: '600000'
+      FOUNDRY_CACHE_VERSION: '14.364'
+      FOUNDRY_CORE_VERSION: '14.364'
+
+    steps:
+      - name: Checkout system repository
+        uses: actions/checkout@v6
+
+      # this should be able to be pulled in like quench
+      - name: Checkout Quench tests
+        uses: actions/checkout@v6
+        with:
+          repository: Achoobert/mothership-system-tests
+          ref: main
+          path: mothership-system-tests
+
+      - name: Install system dependencies
+        run: npm i
+
+      - name: Install Quench test dependencies
+        working-directory: mothership-system-tests
+        run: |
+          corepack enable
+          pnpm install --frozen-lockfile
+
+      - name: Run Foundry E2E
+        uses: Achoobert/FoundryvttTestEnv@0.0.12
+        with:
+          foundry_version: '14.364'
+          foundry_world: mosh-test
+          test_system_manifest_url: local
+          test_module_ids: quench,mothership-system-tests
+          build_script: |
+            dest=foundrydata/Data/systems/mosh
+            mkdir -p "$dest"
+            rsync -a \
+              --exclude '.git' --exclude 'node_modules' --exclude 'foundrydata' --exclude '.foundry-docker' --exclude 'scss' \
+              system.json template.json module css lang templates packs images lib data \
+              "$dest/"
+          quench_tests_path: ./mothership-system-tests
+          quench_build_command: |
+            cp mothership-system-tests/fvtt.config.example.js mothership-system-tests/fvtt.config.js
+            pnpm -C mothership-system-tests run build
+          foundry_username: ${{ secrets.FOUNDRY_USERNAME }}
+          foundry_password: ${{ secrets.FOUNDRY_PASSWORD }}
+          foundry_admin_key: ${{ secrets.FOUNDRY_ADMIN_KEY }}
+          quench_stats_timeout: '900000'
